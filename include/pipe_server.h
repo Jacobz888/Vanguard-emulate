@@ -5,6 +5,9 @@
 #include <vector>
 #include <thread>
 #include <atomic>
+#include <memory>
+
+class MessageParser;
 
 class PipeServer {
 public:
@@ -17,6 +20,9 @@ public:
     
     bool adjustPrivileges();
     
+    void enableProtocolAnalysis(bool enable);
+    void generateAnalysisReport(const std::string& filename);
+    
 private:
     void acceptConnections();
     void handleClient(HANDLE pipeHandle);
@@ -28,4 +34,7 @@ private:
     std::atomic<bool> m_running;
     std::vector<std::thread> m_threads;
     std::thread m_acceptThread;
+    
+    bool m_analysisEnabled;
+    std::unique_ptr<MessageParser> m_messageParser;
 };
