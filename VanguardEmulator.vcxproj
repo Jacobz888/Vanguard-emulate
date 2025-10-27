@@ -95,12 +95,14 @@
     <ClCompile Include="src\config.cpp" />
     <ClCompile Include="src\service_manager.cpp" />
     <ClCompile Include="src\pipe_server.cpp" />
+    <ClCompile Include="src\message_parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\logger.h" />
     <ClInclude Include="include\config.h" />
     <ClInclude Include="include\service_manager.h" />
     <ClInclude Include="include\pipe_server.h" />
+    <ClInclude Include="include\message_parser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.ini" />

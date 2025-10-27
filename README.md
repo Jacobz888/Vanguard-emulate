@@ -257,12 +257,52 @@ Future enhancements would require:
 
 ## Development
 
+### Protocol Analysis Features
+
+The emulator now includes **comprehensive protocol analysis tools** for understanding Vanguard pipe communication:
+
+#### Features
+- **Message Capture**: All messages logged with hex dumps
+- **Timing Analysis**: Microsecond-precision timing for each message
+- **Pattern Detection**: Automatic identification of headers and magic bytes
+- **Statistical Analysis**: Message counts, sizes, frequencies
+- **Structure Analysis**: Length field and encoding detection
+
+#### Usage
+
+1. **Enable Analysis** (automatic in current build):
+   ```cpp
+   pipeServer.enableProtocolAnalysis(true);
+   ```
+
+2. **Set DEBUG Logging** in `config.ini`:
+   ```ini
+   log_level=DEBUG
+   ```
+
+3. **Run and Capture**:
+   - Start emulator
+   - Launch game
+   - Let run for 5-10 minutes
+   - Stop with Ctrl+C
+
+4. **Review Results**:
+   - **Capture Logs**: `/logs/message_captures/capture_*.log`
+   - **Analysis Report**: `/logs/protocol_analysis_report.txt`
+   - **Documentation**: `/docs/protocol_analysis.md`
+
+#### Documentation
+
+- **[Protocol Analysis Guide](docs/analysis_guide.md)** - Complete usage instructions
+- **[Protocol Analysis Document](docs/protocol_analysis.md)** - Findings and methodology
+- **[Logs README](logs/README.md)** - Log file format reference
+
 ### Adding Features
 
-1. **Protocol Analysis**: Capture real pipe traffic
-2. **Message Parsing**: Decode message structures
-3. **Response Logic**: Implement proper responses
-4. **State Management**: Track session state
+1. **Protocol Analysis**: ✅ Implemented - Capture and analyze pipe traffic
+2. **Message Parsing**: ✅ Implemented - Decode message structures
+3. **Response Logic**: 🔄 To be determined based on analysis
+4. **State Management**: 🔄 To be implemented if needed
 
 ### Debugging
 
@@ -272,7 +312,10 @@ log_level=DEBUG
 ```
 
 This logs:
-- Detailed message sizes
+- Detailed message sizes and counts
+- Hex previews (first 64 bytes)
+- Read/write timing (microseconds)
+- Session statistics every 10 messages
 - Service state transitions
 - Pipe connection events
 - Thread lifecycle events

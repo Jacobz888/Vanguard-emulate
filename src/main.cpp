@@ -102,6 +102,10 @@ int main(int argc, char* argv[]) {
     }
     
     logger.info("Pipe server started successfully");
+    
+    pipeServer.enableProtocolAnalysis(true);
+    logger.info("Protocol analysis enabled");
+    
     std::this_thread::sleep_for(std::chrono::seconds(1));
     
     logger.info("===== Phase 3: Restarting Vanguard Services =====");
@@ -111,14 +115,20 @@ int main(int argc, char* argv[]) {
     
     logger.info("===== Emulator Running =====");
     logger.info("Pipe hijacking active. Press Ctrl+C to stop.");
+    logger.info("Protocol analysis active - capturing all messages");
     
     while (g_running && pipeServer.isRunning()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     
     logger.info("===== Shutting Down =====");
+    
+    logger.info("Generating protocol analysis report...");
+    pipeServer.generateAnalysisReport("logs/protocol_analysis_report.txt");
+    
     pipeServer.stop();
     
     logger.info("Emulator stopped");
+    logger.info("Analysis artifacts saved in logs/ directory");
     return 0;
 }

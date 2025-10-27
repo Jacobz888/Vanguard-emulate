@@ -1,10 +1,13 @@
 #include "../include/pipe_server.h"
 #include "../include/logger.h"
+#include "../include/message_parser.h"
 #include <sstream>
 #include <chrono>
+#include <iomanip>
 
 PipeServer::PipeServer(const std::string& pipeName, size_t bufferSize)
-    : m_pipeName(pipeName), m_bufferSize(bufferSize), m_running(false) {
+    : m_pipeName(pipeName), m_bufferSize(bufferSize), m_running(false), 
+      m_analysisEnabled(false), m_messageParser(nullptr) {
     m_fullPipeName = "\\\\.\\pipe\\" + pipeName;
 }
 
@@ -91,6 +94,35 @@ bool PipeServer::isRunning() const {
     return m_running;
 }
 
+void PipeServer::enableProtocolAnalysis(bool enable) {
+    m_analysisEnabled = enable;
+    
+    if (enable && !m_messageParser) {
+        m_messageParser = std::make_unique<MessageParser>();
+        
+        auto now = std::chrono::system_clock::now();
+        auto time = std::chrono::system_clock::to_time_t(now);
+        std::stringstream ss;
+        ss << "logs/message_captures/capture_" 
+           << std::put_time(std::localtime(&time), "%Y%m%d_%H%M%S") 
+           << ".log";
+        
+        m_messageParser->setCaptureFile(ss.str());
+        Logger::getInstance().info("Protocol analysis enabled. Capturing to: " + ss.str());
+    } else if (!enable && m_messageParser) {
+        Logger::getInstance().info("Protocol analysis disabled");
+    }
+}
+
+void PipeServer::generateAnalysisReport(const std::string& filename) {
+    if (m_messageParser) {
+        m_messageParser->generateReport(filename);
+        Logger::getInstance().info("Analysis report generated: " + filename);
+    } else {
+        Logger::getInstance().warning("Cannot generate report: protocol analysis not enabled");
+    }
+}
+
 HANDLE PipeServer::createNamedPipe() {
     HANDLE hPipe = CreateNamedPipeA(
         m_fullPipeName.c_str(),
@@ -146,9 +178,13 @@ void PipeServer::handleClient(HANDLE pipeHandle) {
     Logger::getInstance().info("Handling client connection");
     
     std::vector<char> buffer(m_bufferSize);
+    uint64_t messageCount = 0;
+    auto sessionStart = std::chrono::steady_clock::now();
     
     while (m_running) {
         DWORD bytesRead = 0;
+        auto readStart = std::chrono::high_resolution_clock::now();
+        
         BOOL success = ReadFile(
             pipeHandle,
             buffer.data(),
@@ -156,6 +192,8 @@ void PipeServer::handleClient(HANDLE pipeHandle) {
             &bytesRead,
             nullptr
         );
+        
+        auto readEnd = std::chrono::high_resolution_clock::now();
         
         if (!success || bytesRead == 0) {
             if (GetLastError() == ERROR_BROKEN_PIPE) {
@@ -166,9 +204,29 @@ void PipeServer::handleClient(HANDLE pipeHandle) {
             break;
         }
         
+        messageCount++;
+        
         std::stringstream ss;
-        ss << "Received " << bytesRead << " bytes from client";
+        ss << "Message #" << messageCount << ": Received " << bytesRead << " bytes from client";
         Logger::getInstance().debug(ss.str());
+        
+        if (m_analysisEnabled && m_messageParser) {
+            m_messageParser->captureMessage(buffer.data(), bytesRead, true);
+            
+            auto readDuration = std::chrono::duration_cast<std::chrono::microseconds>(
+                readEnd - readStart).count();
+            
+            ss.str("");
+            ss << "Read time: " << readDuration << " microseconds";
+            Logger::getInstance().debug(ss.str());
+            
+            ss.str("");
+            ss << "Hex preview (first 64 bytes):\n" 
+               << m_messageParser->hexDump(buffer.data(), std::min<size_t>(64, bytesRead), true);
+            Logger::getInstance().debug(ss.str());
+        }
+        
+        auto writeStart = std::chrono::high_resolution_clock::now();
         
         DWORD bytesWritten = 0;
         success = WriteFile(
@@ -179,9 +237,22 @@ void PipeServer::handleClient(HANDLE pipeHandle) {
             nullptr
         );
         
+        auto writeEnd = std::chrono::high_resolution_clock::now();
+        
         if (!success) {
             Logger::getInstance().error("Failed to write to pipe");
             break;
+        }
+        
+        if (m_analysisEnabled && m_messageParser) {
+            m_messageParser->captureMessage(buffer.data(), bytesWritten, false);
+            
+            auto writeDuration = std::chrono::duration_cast<std::chrono::microseconds>(
+                writeEnd - writeStart).count();
+            
+            ss.str("");
+            ss << "Write time: " << writeDuration << " microseconds";
+            Logger::getInstance().debug(ss.str());
         }
         
         ss.str("");
@@ -189,9 +260,23 @@ void PipeServer::handleClient(HANDLE pipeHandle) {
         Logger::getInstance().debug(ss.str());
         
         FlushFileBuffers(pipeHandle);
+        
+        auto now = std::chrono::steady_clock::now();
+        auto sessionDuration = std::chrono::duration_cast<std::chrono::seconds>(
+            now - sessionStart).count();
+        
+        if (m_analysisEnabled && messageCount % 10 == 0) {
+            ss.str("");
+            ss << "Session stats: " << messageCount << " messages in " 
+               << sessionDuration << " seconds";
+            Logger::getInstance().info(ss.str());
+        }
     }
     
     DisconnectNamedPipe(pipeHandle);
     CloseHandle(pipeHandle);
-    Logger::getInstance().info("Client handler terminated");
+    
+    std::stringstream ss;
+    ss << "Client handler terminated. Total messages: " << messageCount;
+    Logger::getInstance().info(ss.str());
 }

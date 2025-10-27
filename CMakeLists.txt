@@ -17,6 +17,7 @@ set(SOURCES
     src/config.cpp
     src/service_manager.cpp
     src/pipe_server.cpp
+    src/message_parser.cpp
 )
 
 set(HEADERS
@@ -24,6 +25,7 @@ set(HEADERS
     include/config.h
     include/service_manager.h
     include/pipe_server.h
+    include/message_parser.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})

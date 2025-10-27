@@ -82,6 +82,9 @@ ipch/
 # Logs
 *.log
 vanguard_emulator.log
+logs/message_captures/*.log
+logs/protocol_analysis_report.txt
+!logs/README.md
 
 # Compiled executables
 *.exe

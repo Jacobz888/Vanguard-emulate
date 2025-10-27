@@ -1,0 +1,222 @@
+# Logs Directory
+
+This directory contains runtime logs and protocol analysis captures from the Vanguard Pipe Emulator.
+
+## Directory Structure
+
+```
+logs/
+├── message_captures/    # Raw message capture logs
+│   └── capture_YYYYMMDD_HHMMSS.log
+├── protocol_analysis_report.txt  # Generated analysis summary
+└── README.md           # This file
+```
+
+## Message Capture Logs
+
+Located in: `message_captures/`
+
+Each capture file contains:
+- Complete message history for a session
+- Timestamps (millisecond precision)
+- Message direction (INCOMING/OUTGOING)
+- Message sizes
+- Structure analysis
+- Full hex dumps with ASCII representation
+- Timing information
+
+### File Naming Convention
+
+`capture_YYYYMMDD_HHMMSS.log` - Created when protocol analysis is enabled
+
+Example: `capture_20240115_143045.log`
+
+### Log Format
+
+```
+=== Message Capture Session Started: YYYY-MM-DD HH:MM:SS.mmm ===
+
+[YYYY-MM-DD HH:MM:SS.mmm] INCOMING (X bytes)
+Structure Analysis:
+  Size: X bytes (0xY)
+  Type: Binary/Text
+  First 4 bytes: [hex]
+    As uint32 (LE): value
+    As uint32 (BE): value
+  [Additional structure info]
+
+Hex Dump:
+00000000  XX XX XX XX XX XX XX XX  XX XX XX XX XX XX XX XX  |ASCII repr......|
+...
+
+--------------------------------------------------------------------------------
+
+[YYYY-MM-DD HH:MM:SS.mmm] OUTGOING (Y bytes)
+...
+```
+
+## Protocol Analysis Report
+
+File: `protocol_analysis_report.txt`
+
+Generated at emulator shutdown, contains:
+- Statistical summary (message counts, sizes, frequencies)
+- Pattern analysis (recurring headers)
+- Message size distribution
+- Identified message types
+
+### Report Sections
+
+1. **Header**
+   - Report metadata
+   - Generation timestamp
+
+2. **Statistics**
+   - Incoming message stats
+   - Outgoing message stats
+   - Average sizes
+   - Message frequencies
+
+3. **Pattern Analysis**
+   - Detected 4-byte header patterns
+   - Pattern frequencies
+   - Correlation with message types
+
+4. **Size Distribution**
+   - Message size histogram
+   - Fixed vs. variable size messages
+
+## Usage
+
+### Enable Protocol Analysis
+
+Protocol analysis is automatically enabled in the emulator. To disable:
+
+```cpp
+// In main.cpp
+pipeServer.enableProtocolAnalysis(false);  // Disable
+```
+
+### Generate Reports
+
+Reports are automatically generated on shutdown. To generate manually:
+
+```cpp
+pipeServer.generateAnalysisReport("logs/custom_report.txt");
+```
+
+### Analyzing Captures
+
+1. **Review Raw Logs**
+   - Open `message_captures/capture_*.log`
+   - Look for patterns in hex dumps
+   - Note message sizes and timing
+
+2. **Check Summary Report**
+   - Open `protocol_analysis_report.txt`
+   - Review statistics
+   - Identify common patterns
+
+3. **Update Documentation**
+   - Fill findings into `docs/protocol_analysis.md`
+   - Document message types
+   - Note response requirements
+
+## File Management
+
+### Retention
+
+Capture files can grow large with extended sessions. Consider:
+- Archiving old captures
+- Compressing inactive logs
+- Deleting test captures after analysis
+
+### Disk Space
+
+Monitor disk usage:
+- Each message = ~200-500 bytes of log data (with hex dump)
+- High-frequency messages (10/sec) = ~5-10 MB per hour
+- Typical session = 10-50 MB
+
+### Cleanup
+
+To clear all logs:
+```bash
+rm -rf logs/message_captures/*.log
+rm -f logs/protocol_analysis_report.txt
+```
+
+## Security Notice
+
+**Capture logs may contain sensitive information:**
+- Process IDs
+- Memory addresses
+- System configuration
+- Anti-cheat internals
+
+**Do not share logs publicly without review.**
+
+## Troubleshooting
+
+### No Capture Files Created
+
+- Check that protocol analysis is enabled
+- Verify `logs/message_captures/` directory exists
+- Check write permissions
+- Review emulator log for errors
+
+### Empty Capture Files
+
+- No client connected to pipe
+- Vanguard services not sending messages
+- Check service status
+
+### Large Files
+
+- High message frequency
+- Long session duration
+- Consider periodic restarts for analysis
+
+### Report Not Generated
+
+- Emulator crashed before shutdown
+- Write permission denied
+- Check for errors in main log
+
+## Integration with Analysis Tools
+
+### Python Analysis Script (Example)
+
+```python
+import re
+
+def parse_capture_log(filename):
+    messages = []
+    with open(filename, 'r') as f:
+        content = f.read()
+        # Parse timestamps, directions, hex dumps
+        # ...
+    return messages
+
+messages = parse_capture_log('message_captures/capture_20240115_143045.log')
+# Perform statistical analysis
+```
+
+### Hex Dump Viewer
+
+Use tools like:
+- `xxd` - Command-line hex viewer
+- HxD - Windows hex editor
+- 010 Editor - Advanced hex editor with templates
+
+## Documentation
+
+For complete protocol analysis methodology and findings, see:
+- `/docs/protocol_analysis.md` - Full analysis documentation
+- Main README - Emulator overview
+- Project documentation - Architecture details
+
+---
+
+*This directory is auto-generated by the emulator.*
+*Do not commit sensitive logs to version control.*
