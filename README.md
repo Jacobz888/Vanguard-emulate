@@ -84,9 +84,6 @@ log_level=INFO
 ## Usage
 
 1. **Run as Administrator**:
-   ```
-   Right-click VanguardEmulator.exe -> Run as administrator
-   ```
 
 2. The emulator will:
    - Stop Vanguard services (vgk, vgc)
