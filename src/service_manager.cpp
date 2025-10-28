@@ -25,7 +25,7 @@ bool ServiceManager::stopService(const std::string& serviceName) {
     
     Logger::getInstance().info("Stopping service: " + serviceName);
     
-    SC_HANDLE service = OpenService(m_scManager, serviceName.c_str(), SERVICE_STOP | SERVICE_QUERY_STATUS);
+    SC_HANDLE service = OpenServiceA(m_scManager, serviceName.c_str(), SERVICE_STOP | SERVICE_QUERY_STATUS);
     if (!service) {
         DWORD error = GetLastError();
         if (error == ERROR_SERVICE_DOES_NOT_EXIST) {
@@ -67,7 +67,7 @@ bool ServiceManager::startService(const std::string& serviceName) {
     
     Logger::getInstance().info("Starting service: " + serviceName);
     
-    SC_HANDLE service = OpenService(m_scManager, serviceName.c_str(), SERVICE_START | SERVICE_QUERY_STATUS);
+    SC_HANDLE service = OpenServiceA(m_scManager, serviceName.c_str(), SERVICE_START | SERVICE_QUERY_STATUS);
     if (!service) {
         DWORD error = GetLastError();
         if (error == ERROR_SERVICE_DOES_NOT_EXIST) {
@@ -176,7 +176,7 @@ SERVICE_STATUS_PROCESS ServiceManager::queryServiceStatus(const std::string& ser
         return status;
     }
     
-    SC_HANDLE service = OpenService(m_scManager, serviceName.c_str(), SERVICE_QUERY_STATUS);
+    SC_HANDLE service = OpenServiceA(m_scManager, serviceName.c_str(), SERVICE_QUERY_STATUS);
     if (!service) {
         return status;
     }
