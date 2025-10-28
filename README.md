@@ -126,6 +126,9 @@ Operations:
 
 ### Message Handling
 
+<img width="662" height="287" alt="image" src="https://github.com/user-attachments/assets/3b391761-f2c8-4a7d-8faf-0009c00e34ce" />
+
+
 The pipe server uses an **echo strategy**:
 1. Receive message from client
 2. Log message size and content (debug mode)
