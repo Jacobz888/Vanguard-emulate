@@ -183,16 +183,6 @@ Log format:
 [2024-01-15 14:30:45.123] [INFO] Message text
 ```
 
-## Success Criteria
-
-- ✅ Project compiles without errors
-- ✅ Runs with administrator privileges
-- ✅ SeDebugPrivilege acquired successfully
-- ✅ Services stop and start correctly
-- ✅ Named pipe created and listening
-- ✅ Multiple client connections supported
-- ✅ Messages echoed back to clients
-
 ## Troubleshooting
 
 ### "Failed to open Service Control Manager"
