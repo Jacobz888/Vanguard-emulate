@@ -102,9 +102,11 @@ void PipeServer::enableProtocolAnalysis(bool enable) {
         
         auto now = std::chrono::system_clock::now();
         auto time = std::chrono::system_clock::to_time_t(now);
+        struct tm timeinfo;
+        localtime_s(&timeinfo, &time);
         std::stringstream ss;
         ss << "logs/message_captures/capture_" 
-           << std::put_time(std::localtime(&time), "%Y%m%d_%H%M%S") 
+           << std::put_time(&timeinfo, "%Y%m%d_%H%M%S") 
            << ".log";
         
         m_messageParser->setCaptureFile(ss.str());
