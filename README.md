@@ -318,6 +318,3 @@ This is a research project. Contributions should focus on:
 - Documentation
 - Security awareness
 
-## Disclaimer
-
-This software is provided for educational and research purposes. The authors are not responsible for misuse or damage caused by this software. Anti-cheat systems are designed to protect game integrity - respect their purpose and use this knowledge responsibly.
